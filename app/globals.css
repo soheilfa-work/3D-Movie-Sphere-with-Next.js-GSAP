@@ -1,0 +1,319 @@
+@import "tailwindcss";
+
+:root {
+  --background: #070304;
+  --foreground: #f6efe4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  background: #070304;
+  color: #f6efe4;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.sphere-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  perspective: 1100px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0.2) 18%,
+      rgba(0, 0, 0, 0.55)
+    ),
+    url("/cinema-backdrop.png") center / cover no-repeat,
+    #070304;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+}
+
+.sphere-stage.is-dragging {
+  cursor: grabbing;
+}
+
+.sphere {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-style: preserve-3d;
+}
+
+.sphere-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--card-w, 180px);
+  height: var(--card-h, 102px);
+  margin-left: calc(var(--card-w, 180px) / -2);
+  margin-top: calc(var(--card-h, 102px) / -2);
+  opacity: 0;
+  background: transparent;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.card-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #140c0c;
+  box-shadow:
+    0 0 0 1px rgba(232, 194, 122, 0.38),
+    0 18px 40px rgba(0, 0, 0, 0.58);
+}
+
+.sphere-card-image {
+  object-fit: cover;
+  pointer-events: none;
+}
+
+@property --stroke-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+.sphere-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(20, 8, 8, 0.15) 0%,
+    rgba(0, 0, 0, 0.28) 48%,
+    rgba(0, 0, 0, 0.78) 100%
+  );
+  pointer-events: none;
+}
+
+.sphere-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+
+.sphere-glow {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(72vw, 820px);
+  height: min(52vw, 520px);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 168, 72, 0.16),
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+.sphere-card.is-hot {
+  animation: stroke-spin 2.4s linear infinite;
+}
+
+.sphere-card.is-hot .card-frame {
+  box-shadow:
+    0 0 0 1px rgba(255, 244, 220, 0.9),
+    0 0 14px 2px rgba(255, 176, 64, 0.8),
+    0 0 32px 6px rgba(226, 58, 58, 0.4);
+}
+
+.card-stroke {
+  position: absolute;
+  inset: -4px;
+  z-index: 0;
+  border-radius: 16px;
+  padding: 2px;
+  opacity: 0;
+  background: conic-gradient(
+    from var(--stroke-angle),
+    transparent 0deg,
+    rgba(255, 228, 180, 0.15) 36deg,
+    #fff6df 74deg,
+    #ffb347 108deg,
+    #e23a3a 142deg,
+    transparent 186deg,
+    transparent 360deg
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  transition: opacity 0.85s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+
+.card-stroke-glow {
+  inset: -10px;
+  padding: 7px;
+  filter: blur(6px);
+}
+
+.sphere-card.is-hot .card-stroke {
+  opacity: 1;
+}
+
+.cinema-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  height: 52px;
+  background: #050203;
+  pointer-events: none;
+}
+
+.cinema-bar-top {
+  top: 0;
+  border-bottom: 1px solid rgba(232, 194, 122, 0.45);
+}
+
+.cinema-bar-bottom {
+  bottom: 0;
+  border-top: 1px solid rgba(232, 194, 122, 0.45);
+}
+
+.cinema-kicker,
+.sphere-hint,
+.movie-popup-kicker {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #e8c27a;
+}
+
+.cinema-title,
+.movie-popup-title {
+  font-family: var(--font-cinzel), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cinema-title {
+  font-size: 15px;
+  color: #f6efe4;
+}
+
+.sphere-hint {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.sphere-stage.is-ready .sphere-hint {
+  opacity: 1;
+}
+
+.sphere-stage.is-engaged .sphere-hint {
+  opacity: 0;
+}
+
+.movie-popup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 8;
+  width: min(250px, 28vw);
+  padding: 14px 16px 16px;
+  border: 1px solid rgba(232, 194, 122, 0.5);
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    rgba(42, 16, 18, 0.92),
+    rgba(10, 6, 8, 0.9)
+  );
+  color: #f6efe4;
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  transition: opacity 0.85s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+
+.movie-popup.is-visible {
+  opacity: 1;
+}
+
+.movie-popup-kicker::before {
+  content: "Reel ";
+}
+
+.movie-popup-title {
+  margin-top: 6px;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.movie-popup-copy {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(246, 239, 228, 0.84);
+}
+
+.movie-popup.is-visible .movie-popup-title,
+.movie-popup.is-visible .movie-popup-copy {
+  animation: popup-in 0.85s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+
+@keyframes stroke-spin {
+  to {
+    --stroke-angle: 360deg;
+  }
+}
+
+@keyframes popup-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 760px) {
+  .movie-popup {
+    display: none;
+  }
+  .cinema-kicker {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sphere-card.is-hot,
+  .movie-popup.is-visible .movie-popup-title,
+  .movie-popup.is-visible .movie-popup-copy {
+    animation: none;
+  }
+}
